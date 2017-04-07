@@ -11,6 +11,10 @@ VIEW_HEIGHT = 100
 #... note that this is fairly arbitrary, and is roughly equivalent to gaussian blur radius
 THRESHOLD = 2 * math.sqrt((VIEW_HEIGHT / 2)**2 + (VIEW_WIDTH / 2)**2)
 
+# Because weighting works by repeating text, and repetition must be an integer number of times,
+#... weights are scaled by this value, so text will appear between 0 and 20 times
+MAX_REPEAT = 20
+
 # This determines how much wider the input dataset needs to be to fill the data requirements
 INPUT_WIDTH = VIEW_WIDTH + 2 * THRESHOLD
 INPUT_HEIGHT = VIEW_HEIGHT + 2 * THRESHOLD
@@ -48,11 +52,11 @@ def distance(relative_point, comparison_point):
 #	on the result point. This just means that closer weights are weighted above farther points
 def weight(val, dist):
 	# TODO: Implement this function
-	return val * (THRESHOLD - dist) / THRESHOLD
+	return val * int(round((THRESHOLD - dist) / THRESHOLD * MAX_REPEAT))
 	# return val/dist 	# This is a BAD weighting system, it doesn't guarantee gradient matching
 
 def calc_point(relative_point, points):
-	cumulative_sum = 0
+	cumulative_text = ""
 
 	# This list comprehension produces tuples of points and distances (to prevent recalculation
 	#... of distance) for all points within `THRESHOLD` distance
@@ -66,10 +70,14 @@ def calc_point(relative_point, points):
 	cumulative_sum = reduce((lambda a, b: a + b),
 		map((lambda (point, dist): weight(point.val, dist)), in_range))
 
-	return cumulative_sum / len(in_range)
+	return cumulative_sum.strip()	# Remove trailing space left from spaces appended earlier
 
+def append_spaces(points):
+	return map((lambda point: Point(x = point.x, y = point.y, val = point.val + " ")), points)
 
 def deinterpolate(points, upper_left, lower_right):
+	points = append_spaces(points)
+
 	result = {
 		"upper_left":	Point(x = upper_left.x, y = upper_left.y),
 		"upper_right":	Point(x = lower_right.x, y = upper_left.y),

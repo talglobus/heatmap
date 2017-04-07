@@ -52,8 +52,7 @@ def weight(val, dist):
 	# return val/dist 	# This is a BAD weighting system, it doesn't guarantee gradient matching
 
 def calc_point(relative_point, points):
-	cumulative_sum = 0
-
+	
 	# This list comprehension produces tuples of points and distances (to prevent recalculation
 	#... of distance) for all points within `THRESHOLD` distance
 	in_range = [(point, distance(relative_point, point)) for point in points
