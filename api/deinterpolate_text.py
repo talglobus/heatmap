@@ -1,48 +1,20 @@
 # This provides a function, `deinterpolate()`, which takes coordinates for upper left hand and
-#... bottom right hand corners, along with a series of points (x, y, value), and finds five
-#... point values, namely the upper left, upper right, lower left, lower right and middle point
+# bottom right hand corners, along with a series of points (x, y, value), and finds five
+# point values, namely the upper left, upper right, lower left, lower right and middle point
 
 import math
+from position import Point, distance, calc_needed
 
-VIEW_WIDTH = 100
-VIEW_HEIGHT = 100
-
-# This determines the maximum counted distance between an input point and desired output point
-#... note that this is fairly arbitrary, and is roughly equivalent to gaussian blur radius
-THRESHOLD = 2 * math.sqrt((VIEW_HEIGHT / 2)**2 + (VIEW_WIDTH / 2)**2)
 
 # Because weighting works by repeating text, and repetition must be an integer number of times,
-#... weights are scaled by this value, so text will appear between 0 and 20 times
+# weights are scaled by this value, so text will appear between 0 and 20 times
 MAX_REPEAT = 20
 
-# This determines how much wider the input dataset needs to be to fill the data requirements
-INPUT_WIDTH = VIEW_WIDTH + 2 * THRESHOLD
-INPUT_HEIGHT = VIEW_HEIGHT + 2 * THRESHOLD
-
-# Simple point class
-class Point(object):
-	def __init__(self, x, y, val=None):
-		self.x = x
-		self.y = y
-		self.val = val
-
-	# def getPos(self):
-	# 	return {"x": self.x, "y": self.y}
-
-	# def getVal(self):
-	# 	return self.val
-
-	# def setVal(self, val):
-	# 	self.val = val
-
-def distance(relative_point, comparison_point):
-	return math.sqrt((comparison_point.x-relative_point.x)**2
-		+ (comparison_point.y-relative_point.y)**2)
 
 # This function is the bread and butter of this module, determining how, given a point's value
-#... and the distance from it to the result point, it is weighted into the value assigned to the
-#... result. Note that the values being weighted are text, and so all weighting takes the form
-#... of text repeated by a multiplier determined by the weight.
+# and the distance from it to the result point, it is weighted into the value assigned to the
+# result. Note that the values being weighted are text, and so all weighting takes the form
+# of text repeated by a multiplier determined by the weight.
 #
 # There are a few rules that need to be followed for this to be a good weighting:
 #
@@ -55,33 +27,28 @@ def distance(relative_point, comparison_point):
 #		how at any point in the unit circle, sin^2(theta) + cos^2(theta) is ALWAYS 1
 # 3) The closer a result point to an input point, the greater weight the input point should have
 #	on the result point. This just means that closer points are weighted above farther points
-def weight(val, dist):
-	# TODO: Implement this function
-	return val * int(round((THRESHOLD - dist) / THRESHOLD * MAX_REPEAT))
-	# return val/dist 	# This is a BAD weighting system, it doesn't guarantee gradient matching
+def weight(val, dist, threshold):
+	return val * int(round((threshold - dist) / threshold * MAX_REPEAT))
 
-def calc_point(relative_point, points):
-	cumulative_text = ""
 
-	# This list comprehension produces tuples of points and distances (to prevent recalculation
-	#... of distance) for all points within `THRESHOLD` distance
-	in_range = [(point, distance(relative_point, point)) for point in points
-		if distance(relative_point, point) < THRESHOLD]
+def calc_point(result_point, points, threshold):
+	# This list comprehension constructs a string that contains the concatenated text from all
+	# input points within range `THRESHOLD`, repeated for weighting up to `MAX_REPEAT` times
+	# depending on distance between the `result_point` and the input `point` as described above
+	# @see weight
+	cumulative_text = sum([weight(point.val, distance(result_point, point), threshold)
+						   for point in points if distance(result_point, point) < threshold])
 
-	# This is a mapreduce operation mapping each of the above (point, distance) tuples into
-	#... a weight, and then reducing that list of weights by simple text concatenation.
-	#... It would be a bit simpler to do the mapping step in the above list comprehension,
-	#... but then you lose the ability to do more clever things with the point data if you
-	#... want to later
-	cumulative_sum = reduce((lambda a, b: a + b),
-		map((lambda (point, dist): weight(point.val, dist)), in_range))
+	return cumulative_text.strip()	# Remove trailing space left from spaces appended earlier
 
-	return cumulative_sum.strip()	# Remove trailing space left from spaces appended earlier
 
 def append_spaces(points):
 	return map((lambda point: Point(x = point.x, y = point.y, val = point.val + " ")), points)
 
+
 def deinterpolate(points, upper_left, lower_right):
+	threshold = calc_needed(upper_left = upper_left, lower_right = lower_right)["threshold"]
+
 	points = append_spaces(points)
 
 	result = {
@@ -94,6 +61,6 @@ def deinterpolate(points, upper_left, lower_right):
 	}
 
 	for key in result:
-		result[key].val = calc_point(result[key], points)
+		result[key].val = calc_point(result[key], points, threshold)
 
 	return result

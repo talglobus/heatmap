@@ -7,7 +7,9 @@ tone_analyzer = ToneAnalyzerV3(
    password='WjBkBwRyMZJD',
    version='2016-05-19')
 
+
 class Sample(object):
+
 	def __init__(self, text, result=None):
 		self.text = text
 		self.hash = self._hash(text)
@@ -18,8 +20,6 @@ class Sample(object):
 
 data = {}
 
-# print(json.dumps(tone_analyzer.tone(text='A word is dead when it is said, some say. Emily Dickinson'), indent=2))
-
 def analyze(text):
 	sample = Sample(text)
 	out = tone_analyzer.tone(text=text)
@@ -27,6 +27,7 @@ def analyze(text):
 	data[sample.hash] = sample
 	
 	return out
+
 
 def empathize(text):
 	analysis = analyze(text)
