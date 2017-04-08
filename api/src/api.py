@@ -7,7 +7,11 @@ from deinterpolate_text import deinterpolate
 # from partialInput.py import PartialInput
 
 
-
+def main():
+	print("working")
+	print("yupples")
+	p = Point(x = 5, y = 6, val = 2)
+	print(p)
 
 # app = Flask(__name__)
 # api = Api(app)
@@ -36,3 +40,6 @@ from deinterpolate_text import deinterpolate
 #
 # if __name__ == "__main__":
 # 	app.run(debug=True)
+
+if __name__ == "__main__":
+	main()
