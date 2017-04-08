@@ -1,5 +1,7 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
+from watson import empathize
+from deinterpolate_text import deinterpolate
 # from partialInput.py import PartialInput
 
 app = Flask(__name__)
@@ -20,7 +22,9 @@ class Full(Resource):
 class Partial(Resource):
 	def get(self):
 		args = parser.parse_args(strict=True)
-		
+
+
+
 
 api.add_resource(Full, '/Full')
 api.add_resource(Partal, '/Partial')

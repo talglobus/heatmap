@@ -41,15 +41,20 @@ def distance(relative_point, comparison_point):
 
 # This function is the bread and butter of this module, determining how, given a point's value
 #... and the distance from it to the result point, it is weighted into the value assigned to the
-#... result. There are a few rules that need to be followed for this to be a good weighting:
+#... result. Note that the values being weighted are text, and so all weighting takes the form
+#... of text repeated by a multiplier determined by the weight.
+#
+# There are a few rules that need to be followed for this to be a good weighting:
+#
 # 1) If all input values are the same, all result values anywhere in the range should match
-#	 - This means that if the input points all have the value 5, all result points should be 5
-#		regardless of where they are in relation to the input points
+#	 - This means that if the input points are all the same text, all result points should be the
+#		same text, in this case repeated MAX_REPEAT times, regardless of where they are in
+#		relation to the input points
 # 2) Result values shouldn't be biased up or down because they happen to not be near input points
 #	 - This means that overall weighting should average to some constant at all points, like
 #		how at any point in the unit circle, sin^2(theta) + cos^2(theta) is ALWAYS 1
 # 3) The closer a result point to an input point, the greater weight the input point should have
-#	on the result point. This just means that closer weights are weighted above farther points
+#	on the result point. This just means that closer points are weighted above farther points
 def weight(val, dist):
 	# TODO: Implement this function
 	return val * int(round((THRESHOLD - dist) / THRESHOLD * MAX_REPEAT))
@@ -64,9 +69,10 @@ def calc_point(relative_point, points):
 		if distance(relative_point, point) < THRESHOLD]
 
 	# This is a mapreduce operation mapping each of the above (point, distance) tuples into
-	#... a weight, and then reducing that list of weights by simple summation. It would be
-	#... a bit simpler to do the mapping step in the above list comprehension, but then you
-	#... lose the ability to do more clever things with the point data if you want to later
+	#... a weight, and then reducing that list of weights by simple text concatenation.
+	#... It would be a bit simpler to do the mapping step in the above list comprehension,
+	#... but then you lose the ability to do more clever things with the point data if you
+	#... want to later
 	cumulative_sum = reduce((lambda a, b: a + b),
 		map((lambda (point, dist): weight(point.val, dist)), in_range))
 

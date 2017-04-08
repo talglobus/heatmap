@@ -2,3 +2,5 @@ Flask
 Flask-Restful
 webargs
 twython
+watson_developer_cloud
+tweepy
